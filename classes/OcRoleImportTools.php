@@ -185,7 +185,7 @@ class OcRoleImportTools
                 foreach ($values as $value) {
                     $section = eZSection::fetchByIdentifier($value);
                     if ($section instanceof eZSection) {
-                        $sectionIdentifiers[] = $section->attribute('identifier');
+                        $sectionIdentifiers[] = $section->attribute('id');
                     } else {
                         return null;
                     }
@@ -206,7 +206,7 @@ class OcRoleImportTools
                     foreach ($values as $value) {
                         $state = eZContentObjectState::fetchByIdentifier($value, $group->attribute('id'));
                         if ($state) {
-                            $stateIdentifiers[] = $state->attribute('identifier');
+                            $stateIdentifiers[] = $state->attribute('id');
                         } else {
                             return null;
                         }
