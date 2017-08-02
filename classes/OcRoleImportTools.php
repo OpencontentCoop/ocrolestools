@@ -270,7 +270,7 @@ class OcRoleImportTools
                 foreach ($values as $value) {
                     $section = eZSection::fetchByIdentifier($value);
                     if ($section instanceof eZSection) {
-                        $sectionIdentifiers[] = $section->attribute('identifier');
+                        $sectionIdentifiers[] = $section->attribute('id');
                     } else {
                         throw new RuntimeException("$identifier $value not found");
                     }
@@ -291,7 +291,7 @@ class OcRoleImportTools
                     foreach ($values as $value) {
                         $state = eZContentObjectState::fetchByIdentifier($value, $group->attribute('id'));
                         if ($state) {
-                            $stateIdentifiers[] = $state->attribute('identifier');
+                            $stateIdentifiers[] = $state->attribute('id');
                         } else {
                             throw new Exception("$identifier $value not found");
                         }
