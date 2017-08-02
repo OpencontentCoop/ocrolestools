@@ -94,18 +94,22 @@ class OcRoleImportTools
 
             foreach ($role['policies'] as $index => $policy) {
 
-                $module = eZModule::exists($policy['ModuleName']);
-                if (!$module instanceof eZModule) {
-                    $this->errors[] = "Module {$policy['ModuleName']} not found";
-                    unset($this->importParameters['policies'][$index]);
-                    continue;
+                if ($policy['ModuleName'] != '*') {
+                    $module = eZModule::exists($policy['ModuleName']);
+                    if (!$module instanceof eZModule) {
+                        $this->errors[] = "Module {$policy['ModuleName']} not found";
+                        unset($this->importParameters['policies'][$index]);
+                        continue;
+                    }
                 }
 
-                $functions = $module->attribute('available_functions');
-                if (!isset($functions[$policy['FunctionName']])) {
-                    $this->errors[] = "Module function {$policy['ModuleName']}/{$policy['FunctionName']} not found";
-                    unset($this->importParameters['policies'][$index]);
-                    continue;
+                if ($policy['FunctionName'] != '*') {
+                    $functions = $module->attribute('available_functions');
+                    if (!isset($functions[$policy['FunctionName']])) {
+                        $this->errors[] = "Module function {$policy['ModuleName']}/{$policy['FunctionName']} not found";
+                        unset($this->importParameters['policies'][$index]);
+                        continue;
+                    }
                 }
 
                 foreach ($policy['Limitation'] as $limitationName => $limitationValues) {
