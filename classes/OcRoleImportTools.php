@@ -13,6 +13,8 @@ class OcRoleImportTools
 
     private $fixRequired = array();
 
+    private $fixErrors = array();
+
     private $importParameters = array();
 
     public function __construct(OcRoleSerializer $remote)
@@ -45,12 +47,20 @@ class OcRoleImportTools
         return $this->fixRequired;
     }
 
+    /**
+     * @return array
+     */
+    public function getFixErrors()
+    {
+        return $this->fixErrors;
+    }
+
     public function fix($fixData)
     {
         $importParameters = $this->importParameters;
         foreach ($importParameters['policies'] as $index => $policy) {
             foreach ($policy['Limitation'] as $limitationName => $limitationValues) {
-                if (is_string($limitationValues) && isset($fixData[$limitationValues]) && isset($this->fixRequired[$limitationValues])) {
+                if (is_string($limitationValues) && isset($fixData[$limitationValues]) && $fixData[$limitationValues] != '' && isset($this->fixRequired[$limitationValues])) {
                     $fixValue = $this->fixLimitationValue($limitationName, $fixData[$limitationValues]);
                     if ($fixValue) {
                         $this->importParameters['policies'][$index]['Limitation'][$limitationName] = $fixValue;
@@ -118,14 +128,21 @@ class OcRoleImportTools
                         $value = $this->createLimitationValue($limitationName, $limitationValues);
                         $this->importParameters['policies'][$index]['Limitation'][$limitationName] = $value;
                     } catch (RuntimeException $e) {
+                        $this->importParameters['policies'][$index]['Limitation'][$limitationName] = 'FIX-' . $fixId;
                         $this->fixRequired['FIX-' . $fixId] = array(
                             'name' => $limitationName,
                             'values' => $limitationValues
                         );
-                        $this->importParameters['policies'][$index]['Limitation'][$limitationName] = 'FIX-' . $fixId;
+                        $this->fixErrors['FIX-' . $fixId] = $e->getMessage();
                     } catch (Exception $e) {
-                        $this->errors[] = $e->getMessage()
+                        $this->errors['FIX-' . $fixId] = $e->getMessage()
                             . ' in ' . $policy['ModuleName'] . '/' . $policy['FunctionName'] . ' ' . $limitationName;
+                        $this->importParameters['policies'][$index]['Limitation'][$limitationName] = 'FIX-' . $fixId;
+                        $this->fixRequired['FIX-' . $fixId] = array(
+                            'name' => $limitationName,
+                            'values' => $limitationValues
+                        );
+                        $this->fixErrors['FIX-' . $fixId] = $e->getMessage();
                     }
 
                 }
@@ -136,6 +153,7 @@ class OcRoleImportTools
     private function fixLimitationValue($identifier, $stringValue)
     {
         $values = explode(',', $stringValue);
+        $values = array_map('trim', $values);
         switch ($identifier) {
             case 'ParentClass':
             case 'Class':
